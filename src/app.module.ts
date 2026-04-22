@@ -20,6 +20,8 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { AllConfigType } from './config/config.type';
 import { SessionModule } from './session/session.module';
 import { MailerModule } from './mailer/mailer.module';
+import { AuthZaloModule } from './auth-zalo/auth-zalo.module';
+import zaloConfig from './auth-zalo/config/zalo.config';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -39,6 +41,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
         mailConfig,
         fileConfig,
         googleConfig,
+        zaloConfig
       ],
       envFilePath: ['.env'],
     }),
@@ -70,6 +73,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     FilesModule,
     AuthModule,
     AuthGoogleModule,
+    AuthZaloModule,
     SessionModule,
     MailModule,
     MailerModule,
