@@ -5,6 +5,9 @@ bootstrap:
 config:
 	npm run app:config
 
+gen-migration:
+	npm run migration:create
+
 migration:
 	npm run migration:run
 
@@ -16,7 +19,6 @@ dev:
 
 up:
 	docker compose up -d postgres adminer maildev minio
-
 
 ngrok:
 	ngrok http 8000
