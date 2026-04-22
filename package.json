@@ -102,6 +102,7 @@
     "hygen": "6.2.11",
     "is-ci": "4.1.0",
     "jest": "30.3.0",
+    "lint-staged": "^16.4.0",
     "prettier": "3.8.1",
     "prompts": "2.4.2",
     "release-it": "19.2.4",
@@ -197,5 +198,11 @@
         }
       }
     }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

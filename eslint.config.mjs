@@ -60,6 +60,28 @@ export default [
           message: '"it" should start with "should"',
         },
       ],
+      // Best Practices cho Backend (Node.js/NestJS)
+      'eqeqeq': ['error', 'always'], // Bắt buộc dùng ===
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }], // Hạn chế console.log, chỉ cho phép warn, error, info
+      'complexity': ['warn', 15], // Cảnh báo nếu function quá phức tạp (vượt quá 15 nhánh logic)
+      'max-depth': ['warn', 4], // Cảnh báo nếu lồng if/for quá 4 tầng
+      'curly': ['error', 'all'], // Bắt buộc luôn dùng ngoặc nhọn cho if/for
+      'consistent-return': 'error', // Bắt buộc hàm phải return nhất quán
+      
+      // Strict TypeScript Rules
+      '@typescript-eslint/no-explicit-any': 'warn', // Cảnh báo dùng any (mặc định tắt, giờ bật lên warn)
+      '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }], // Yêu cầu khai báo kiểu return cho function
+      '@typescript-eslint/no-unnecessary-condition': 'error', // Báo lỗi nếu check điều kiện thừa (ví dụ if(true))
+      '@typescript-eslint/await-thenable': 'error', // Báo lỗi nếu await một hàm không phải async
+      '@typescript-eslint/naming-convention': [
+        'error',
+        { selector: 'default', format: ['camelCase'] },
+        { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
+        { selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
+        { selector: 'memberLike', modifiers: ['private'], format: ['camelCase'], leadingUnderscore: 'require' },
+        { selector: 'typeLike', format: ['PascalCase'] },
+        { selector: 'enumMember', format: ['UPPER_CASE'] }
+      ]
     },
   },
 ];
