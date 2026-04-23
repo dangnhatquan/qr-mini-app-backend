@@ -44,7 +44,7 @@ export class FilesS3Service {
   async create(
     file: Express.MulterS3.File | undefined,
   ): Promise<{ file: FileType }> {
-    if (!file) {
+    if (!file?.key) {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
         errors: {
