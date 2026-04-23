@@ -1,6 +1,9 @@
 import {
   Controller,
   Post,
+  Get,
+  Param,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -16,6 +19,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FilesS3Service } from './files.service';
 import { FileResponseDto } from './dto/file-response.dto';
+import { FileType } from '@/files/domain/file';
 
 @ApiTags('Files')
 @Controller({
@@ -48,5 +52,23 @@ export class FilesS3Controller {
     @UploadedFile() file: Express.MulterS3.File,
   ): Promise<FileResponseDto> {
     return this.filesService.create(file);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('upload')
+  async getUploadPresignedUrl(
+    @Query('fileName') fileName: string,
+  ): Promise<{ file: FileType; uploadSignedUrl: string }> {
+    return this.filesService.getUploadPresignedUrl(fileName || 'file.bin');
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':id')
+  async getDownloadSignedUrl(
+    @Param('id') id: string,
+  ): Promise<{ downloadSignedUrl: string }> {
+    return this.filesService.getDownloadSignedUrl(id);
   }
 }

@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Allow } from 'class-validator';
 import { Transform } from 'class-transformer';
-import fileConfig from '../config/file.config';
-import { FileConfig, FileDriver } from '../config/file-config.type';
+import fileConfig from '@/files/config/file.config';
+import { FileConfig, FileDriver } from '@/files/config/file-config.type';
 
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { AppConfig } from '../../config/app-config.type';
-import appConfig from '../../config/app.config';
+import { AppConfig } from '@/config/app-config.type';
+import appConfig from '@/config/app.config';
+import { FileStatusEnum } from '@/files/file-statuses.enum';
 
 export class FileType {
   @ApiProperty({
@@ -53,4 +54,24 @@ export class FileType {
     },
   )
   path: string;
+
+  @ApiProperty({
+    type: String,
+    enum: FileStatusEnum,
+    example: FileStatusEnum.PENDING,
+    nullable: true,
+  })
+  status?: FileStatusEnum | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  expiresAt?: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  createdAt?: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  updatedAt?: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  deletedAt?: Date | null;
 }

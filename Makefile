@@ -22,3 +22,6 @@ up:
 
 ngrok:
 	ngrok http 8000
+
+build:
+	npm run build

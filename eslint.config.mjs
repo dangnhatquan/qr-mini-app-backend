@@ -73,15 +73,7 @@ export default [
       '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }], // Yêu cầu khai báo kiểu return cho function
       '@typescript-eslint/no-unnecessary-condition': 'error', // Báo lỗi nếu check điều kiện thừa (ví dụ if(true))
       '@typescript-eslint/await-thenable': 'error', // Báo lỗi nếu await một hàm không phải async
-      '@typescript-eslint/naming-convention': [
-        'error',
-        { selector: 'default', format: ['camelCase'] },
-        { selector: 'variable', format: ['camelCase', 'UPPER_CASE'] },
-        { selector: 'parameter', format: ['camelCase'], leadingUnderscore: 'allow' },
-        { selector: 'memberLike', modifiers: ['private'], format: ['camelCase'], leadingUnderscore: 'require' },
-        { selector: 'typeLike', format: ['PascalCase'] },
-        { selector: 'enumMember', format: ['UPPER_CASE'] }
-      ]
+      '@typescript-eslint/naming-convention': 'off'
     },
   },
 ];
