@@ -23,7 +23,7 @@ export class FileType {
     example: 'https://example.com/path/to/file.jpg',
   })
   @Transform(
-    ({ value }) => {
+    ({ value, obj }) => {
       if ((fileConfig() as FileConfig).driver === FileDriver.LOCAL) {
         return (appConfig() as AppConfig).backendDomain + value;
       } else if (
@@ -31,28 +31,17 @@ export class FileType {
           (fileConfig() as FileConfig).driver,
         )
       ) {
-        const s3 = new S3Client({
-          region: (fileConfig() as FileConfig).awsS3Region ?? '',
-          endpoint: (fileConfig() as FileConfig).awsS3Endpoint, // BỔ SUNG DÒNG NÀY
-          forcePathStyle: true, // BỔ SUNG DÒNG NÀY (Bắt buộc cho MinIO)
-          credentials: {
-            accessKeyId: (fileConfig() as FileConfig).accessKeyId ?? '',
-            secretAccessKey: (fileConfig() as FileConfig).secretAccessKey ?? '',
-          },
-        });
-        const command = new GetObjectCommand({
-          Bucket: (fileConfig() as FileConfig).awsDefaultS3Bucket ?? '',
-          Key: value,
-        });
+        const config = fileConfig() as FileConfig;
+        const baseUrl = config.awsS3PublicUrl
+          ? config.awsS3PublicUrl.replace('/minio-proxy', '') // lấy base ngrok URL
+          : config.awsS3Endpoint;
 
-        return getSignedUrl(s3, command, { expiresIn: 3600 });
+        // Trả về serve URL thay vì presigned
+        return `${baseUrl}/api/v1/files/serve/${obj.id}`;
       }
-
       return value;
     },
-    {
-      toPlainOnly: true,
-    },
+    { toPlainOnly: true },
   )
   path: string;
 

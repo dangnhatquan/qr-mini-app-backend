@@ -38,6 +38,8 @@ export class FilesS3Service {
           infer: true,
         }),
       },
+      requestChecksumCalculation: 'WHEN_REQUIRED',  // ← thêm
+      responseChecksumValidation: 'WHEN_REQUIRED',  // ← thêm
     });
   }
 
@@ -76,9 +78,17 @@ export class FilesS3Service {
       Key: key,
     });
 
-    const uploadSignedUrl = await getSignedUrl(this.s3, command, {
+    let uploadSignedUrl = await getSignedUrl(this.s3, command, {
       expiresIn: 3600,
     });
+
+    // Chỉ rewrite ở local (khi có AWS_S3_PUBLIC_URL)
+    const publicUrl = this.configService.get('file.awsS3PublicUrl', { infer: true });
+    const endpoint = this.configService.get('file.awsS3Endpoint', { infer: true });
+
+    if (publicUrl && endpoint) {
+      uploadSignedUrl = uploadSignedUrl.replace(endpoint, publicUrl);
+    }
 
     const data = await this.fileRepository.create({
       path: key,
@@ -110,6 +120,23 @@ export class FilesS3Service {
       expiresIn: 3600,
     });
 
-    return { downloadSignedUrl };
+    return { downloadSignedUrl: downloadSignedUrl + '&ngrok-skip-browser-warning=true' };
+  }
+
+  async serveFile(id: string): Promise<{ stream: any; contentType: string }> {
+    const file = await this.fileRepository.findById(id);
+    if (!file) throw new NotFoundException('File not found');
+
+    const command = new GetObjectCommand({
+      Bucket: this.configService.getOrThrow('file.awsDefaultS3Bucket', { infer: true }),
+      Key: file.path,
+    });
+
+    const s3Response = await this.s3.send(command);
+
+    return {
+      stream: s3Response.Body,
+      contentType: s3Response.ContentType ?? 'application/octet-stream',
+    };
   }
 }

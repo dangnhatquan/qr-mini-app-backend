@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { UsersModule } from './users/users.module';
 import { FilesModule } from './files/files.module';
 import { AuthModule } from './auth/auth.module';
@@ -23,6 +23,7 @@ import { MailerModule } from './mailer/mailer.module';
 import { AuthZaloModule } from './auth-zalo/auth-zalo.module';
 import zaloConfig from './auth-zalo/config/zalo.config';
 import { QRRecordsModule } from './qr-records/qr-records.module';
+import { MinioProxyMiddleware } from './middleware/minio-proxy.middleware';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -82,4 +83,4 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     QRRecordsModule,
   ],
 })
-export class AppModule {}
+export class AppModule { }

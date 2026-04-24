@@ -12,6 +12,7 @@ import { AppModule } from './app.module';
 import validationOptions from './utils/validation-options';
 import { AllConfigType } from './config/config.type';
 import { ResolvePromisesInterceptor } from './utils/serializer.interceptor';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,7 @@ async function bootstrap() {
         'https://h5.zdn.vn',
         'https://mini.zalo.me',
         'https://zalo.me',
+        'https://conjuror-overshot-headlamp.ngrok-free.dev'
       ];
 
       if (!origin) {
@@ -64,6 +66,36 @@ async function bootstrap() {
       exclude: ['/'],
     },
   );
+
+  if (process.env.NODE_ENV === 'development') {
+    const minioEndpoint = configService.get('file.minioEndpoint', { infer: true }); // http://localhost:9000
+    if (!minioEndpoint) {
+      throw new Error('file.minioEndpoint is not configured');
+    }
+    const minioUrl = new URL(minioEndpoint);
+
+    app.use(
+      '/minio-proxy',
+      createProxyMiddleware({
+        target: minioEndpoint,
+        changeOrigin: true,
+        pathRewrite: { '^/minio-proxy': '' },
+        on: {
+          proxyReq: (proxyReq, req) => {
+            proxyReq.setHeader('Host', minioUrl.host);
+            proxyReq.setHeader('ngrok-skip-browser-warning', 'true');
+
+            // Strip ngrok-skip-browser-warning trước khi forward tới MinIO
+            const url = new URL(req.url ?? '', 'http://localhost');
+            url.searchParams.delete('ngrok-skip-browser-warning');
+            proxyReq.path = url.pathname + url.search;
+          },
+        },
+      }),
+    );
+
+  }
+
   app.enableVersioning({
     type: VersioningType.URI,
   });

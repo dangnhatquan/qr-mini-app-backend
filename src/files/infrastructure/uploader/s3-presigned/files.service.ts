@@ -32,6 +32,8 @@ export class FilesS3PresignedService {
           infer: true,
         }),
       },
+      requestChecksumCalculation: 'WHEN_REQUIRED',  // ← thêm
+      responseChecksumValidation: 'WHEN_REQUIRED',  // ← thêm
     });
   }
 
@@ -88,7 +90,7 @@ export class FilesS3PresignedService {
 
     return {
       file: data,
-      uploadSignedUrl: signedUrl,
+      uploadSignedUrl: signedUrl + '&ngrok-skip-browser-warning=true',
     };
   }
 }
