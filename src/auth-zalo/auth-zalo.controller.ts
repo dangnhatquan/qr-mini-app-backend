@@ -1,21 +1,11 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Post,
-  Res,
-} from '@nestjs/common';
-import { Response } from 'express';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import ms from 'ms';
 import { ConfigService } from '@nestjs/config';
 
 import { AuthZaloService } from './auth-zalo.service';
 import { AllConfigType } from '../config/config.type';
 import { LoginResponseDto } from '../auth/dto/login-response.dto';
 import { AuthZaloLoginDto } from './dto/login.dto';
-import { ACCESS_TOKEN_COOKIE_NAME } from '../utils/constants/common';
 
 @ApiTags('Auth with Zalo')
 @Controller({
@@ -33,22 +23,7 @@ export class AuthZaloController {
   @HttpCode(HttpStatus.OK)
   async loginWithZalo(
     @Body() dto: AuthZaloLoginDto,
-    @Res({ passthrough: true }) res: Response,
   ): Promise<LoginResponseDto> {
-    const loginResponse = await this.authZaloService.handleZaloLogin(dto);
-
-    const accessTokenExpiresIn = this.configService.getOrThrow('auth.expires', {
-      infer: true,
-    });
-
-    res.cookie(ACCESS_TOKEN_COOKIE_NAME, loginResponse.token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'none',
-      maxAge: ms(accessTokenExpiresIn),
-      path: '/',
-    });
-
-    return loginResponse;
+    return this.authZaloService.handleZaloLogin(dto);
   }
 }

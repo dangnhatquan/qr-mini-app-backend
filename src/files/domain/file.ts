@@ -33,12 +33,13 @@ export class FileType {
       ) {
         const s3 = new S3Client({
           region: (fileConfig() as FileConfig).awsS3Region ?? '',
+          endpoint: (fileConfig() as FileConfig).awsS3Endpoint, // BỔ SUNG DÒNG NÀY
+          forcePathStyle: true, // BỔ SUNG DÒNG NÀY (Bắt buộc cho MinIO)
           credentials: {
             accessKeyId: (fileConfig() as FileConfig).accessKeyId ?? '',
             secretAccessKey: (fileConfig() as FileConfig).secretAccessKey ?? '',
           },
         });
-
         const command = new GetObjectCommand({
           Bucket: (fileConfig() as FileConfig).awsDefaultS3Bucket ?? '',
           Key: value,

@@ -17,8 +17,41 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: true,
-    credentials: true,
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:2999',
+        'http://localhost:3000',
+        'https://h5.zadn.vn',
+        'https://h5.zdn.vn',
+        'https://mini.zalo.me',
+        'https://zalo.me',
+      ];
+
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log('Blocked by CORS:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+      return allowedOrigins;
+    },
+
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+      'Origin',
+      'X-Requested-With',
+      'ngrok-skip-browser-warning',
+    ],
+
+    credentials: false,
   });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });

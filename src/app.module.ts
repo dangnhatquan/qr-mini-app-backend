@@ -22,6 +22,7 @@ import { SessionModule } from './session/session.module';
 import { MailerModule } from './mailer/mailer.module';
 import { AuthZaloModule } from './auth-zalo/auth-zalo.module';
 import zaloConfig from './auth-zalo/config/zalo.config';
+import { QRRecordsModule } from './qr-records/qr-records.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -41,7 +42,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
         mailConfig,
         fileConfig,
         googleConfig,
-        zaloConfig
+        zaloConfig,
       ],
       envFilePath: ['.env'],
     }),
@@ -78,6 +79,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     MailModule,
     MailerModule,
     HomeModule,
+    QRRecordsModule,
   ],
 })
 export class AppModule {}
