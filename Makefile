@@ -20,7 +20,7 @@ dev:
 up:
 	docker compose up -d postgres adminer maildev minio
 
-ngrok:
+tunnel:
 	ngrok http 8000
 
 build:
