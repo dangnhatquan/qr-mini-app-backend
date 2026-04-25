@@ -26,6 +26,7 @@ export class QRRecordsService {
       slug,
       password,
       editorStage,
+      style,
       previewImageId,
       ...rest
     } = createQRRecordDto;
@@ -50,6 +51,7 @@ export class QRRecordsService {
       slug: slug || null,
       passwordHash,
       editorStage: editorStage || null,
+      style: style || null,
       payload: Object.keys(payload).length > 0 ? payload : null,
       isDeleted: false,
       previewImage: file,
@@ -74,6 +76,7 @@ export class QRRecordsService {
       slug,
       password,
       editorStage,
+      style,
       previewImageId,
       ...rest
     } = updateQRRecordDto;
@@ -106,6 +109,9 @@ export class QRRecordsService {
     }
     if (editorStage !== undefined) {
       updateData.editorStage = editorStage;
+    }
+    if (style !== undefined) {
+      updateData.style = style;
     }
 
     if (previewImageId !== undefined) {

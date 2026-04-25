@@ -16,6 +16,7 @@ export class QRRecordMapper {
     }
     domainEntity.payload = raw.payload;
     domainEntity.editorStage = raw.editorStage;
+    domainEntity.style = raw.style;
     domainEntity.isDeleted = raw.isDeleted;
     domainEntity.createdAt = raw.createdAt;
     domainEntity.updatedAt = raw.updatedAt;
@@ -41,6 +42,7 @@ export class QRRecordMapper {
     }
     persistenceEntity.payload = domainEntity.payload;
     persistenceEntity.editorStage = domainEntity.editorStage;
+    persistenceEntity.style = domainEntity.style;
     persistenceEntity.isDeleted = domainEntity.isDeleted;
     persistenceEntity.createdAt = domainEntity.createdAt;
     persistenceEntity.updatedAt = domainEntity.updatedAt;

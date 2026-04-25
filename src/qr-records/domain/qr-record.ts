@@ -53,6 +53,11 @@ export class QRRecord {
   })
   editorStage: Record<string, any> | null;
 
+  @ApiProperty({
+    type: Object,
+  })
+  style: Record<string, any> | null;
+
   @ApiProperty()
   isDeleted: boolean;
 

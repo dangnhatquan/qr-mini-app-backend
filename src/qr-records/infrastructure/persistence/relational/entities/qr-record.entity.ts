@@ -49,6 +49,9 @@ export class QRRecordEntity extends EntityRelationalHelper {
   @Column({ type: 'jsonb', nullable: true })
   editorStage: Record<string, any> | null;
 
+  @Column({ type: 'jsonb', nullable: true })
+  style: Record<string, any> | null;
+
   @Column({ type: 'boolean', default: false })
   isDeleted: boolean;
 

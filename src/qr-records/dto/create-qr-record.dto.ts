@@ -36,6 +36,11 @@ export class CreateQRRecordDto {
   editorStage?: Record<string, any>;
 
   @ApiProperty({ type: Object, required: false })
+  @IsObject()
+  @IsOptional()
+  style?: Record<string, any>;
+
+  @ApiProperty({ type: Object, required: false })
   @Allow()
   wifiData?: Record<string, any>;
 
