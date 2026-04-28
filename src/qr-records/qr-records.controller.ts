@@ -9,6 +9,7 @@ import {
   Get,
   Patch,
   Param,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -52,6 +53,24 @@ export class QRRecordsController {
   @HttpCode(HttpStatus.OK)
   findMyQRs(@Request() req): Promise<QRRecord[]> {
     return this.qrRecordsService.findQRRecordByUserId(String(req.user.id));
+  }
+
+  @ApiOkResponse({
+    type: QRRecord,
+  })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async findOne(@Param('id') id: string): Promise<QRRecord> {
+    const record = await this.qrRecordsService.findOne(id);
+    if (!record) {
+      throw new NotFoundException('QR Record not found');
+    }
+    return record;
   }
 
   @ApiOkResponse({
