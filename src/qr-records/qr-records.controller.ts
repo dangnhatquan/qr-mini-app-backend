@@ -10,6 +10,7 @@ import {
   Patch,
   Param,
   NotFoundException,
+  Delete,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -88,5 +89,20 @@ export class QRRecordsController {
     @Body() updateQRRecordDto: UpdateQRRecordDto,
   ): Promise<QRRecord | null> {
     return this.qrRecordsService.update(id, updateQRRecordDto);
+  }
+
+  @ApiParam({
+    name: 'id',
+    type: String,
+    required: true,
+  })
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
+    const record = await this.qrRecordsService.findOne(id);
+    if (!record) {
+      throw new NotFoundException('QR Record not found');
+    }
+    return this.qrRecordsService.remove(id);
   }
 }

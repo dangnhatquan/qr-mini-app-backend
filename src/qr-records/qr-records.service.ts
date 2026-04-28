@@ -131,4 +131,8 @@ export class QRRecordsService {
 
     return this.qrRecordRepository.update(id, updateData);
   }
+
+  async remove(id: string): Promise<void> {
+    await this.qrRecordRepository.remove(id);
+  }
 }
