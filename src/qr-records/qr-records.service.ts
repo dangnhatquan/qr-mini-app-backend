@@ -1,4 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { AllConfigType } from '../config/config.type';
 import { QRRecordRepository } from './infrastructure/persistence/qr-record.repository';
 import { CreateQRRecordDto } from './dto/create-qr-record.dto';
 import { UpdateQRRecordDto } from './dto/update-qr-record.dto';
@@ -6,6 +8,8 @@ import { QRRecord } from './domain/qr-record';
 import bcrypt from 'bcryptjs';
 import { Logger } from '@nestjs/common';
 import { FilesService } from '../files/files.service';
+import { EQRType } from './qr-records.enum';
+import crypto from 'crypto';
 
 @Injectable()
 export class QRRecordsService {
@@ -14,6 +18,7 @@ export class QRRecordsService {
   constructor(
     private readonly qrRecordRepository: QRRecordRepository,
     private readonly filesService: FilesService,
+    private readonly configService: ConfigService<AllConfigType>,
   ) {}
 
   async create(
@@ -31,6 +36,11 @@ export class QRRecordsService {
       ...rest
     } = createQRRecordDto;
 
+    let finalSlug = slug;
+    if (qrType === EQRType.DYNAMIC && !finalSlug) {
+      finalSlug = this.generateSlug();
+    }
+
     let passwordHash: string | null = null;
     if (password) {
       const salt = await bcrypt.genSalt();
@@ -42,13 +52,15 @@ export class QRRecordsService {
 
     this.logger.log('Creating QR Record:', { createQRRecordDto });
 
-    const file = await this.filesService.findById(previewImageId);
+    const file = previewImageId
+      ? await this.filesService.findById(previewImageId)
+      : null;
 
     return this.qrRecordRepository.create({
       userId,
       type: qrType,
       category,
-      slug: slug || null,
+      slug: finalSlug || null,
       passwordHash,
       editorStage: editorStage || null,
       style: style || null,
@@ -64,6 +76,23 @@ export class QRRecordsService {
 
   async findOne(id: string): Promise<QRRecord | null> {
     return this.qrRecordRepository.findById(id);
+  }
+
+  async findBySlug(slug: string): Promise<QRRecord | null> {
+    return this.qrRecordRepository.findBySlug(slug);
+  }
+
+  async getRedirectUrlBySlug(slug: string): Promise<string> {
+    const record = await this.qrRecordRepository.findBySlug(slug);
+    if (!record) {
+      throw new NotFoundException('QR Record not found');
+    }
+
+    const appId = this.configService.get('zalo.appId', { infer: true });
+    const devVersion = this.configService.get('zalo.devVersion', {
+      infer: true,
+    });
+    return `https://zalo.me/s/${appId}/?env=DEVELOPMENT&version=${devVersion}&page=vcards/${record.id}`;
   }
 
   async update(
@@ -134,5 +163,12 @@ export class QRRecordsService {
 
   async remove(id: string): Promise<void> {
     await this.qrRecordRepository.remove(id);
+  }
+
+  private generateSlug(length = 8): string {
+    return crypto
+      .randomBytes(Math.ceil(length / 2))
+      .toString('hex')
+      .slice(0, length);
   }
 }

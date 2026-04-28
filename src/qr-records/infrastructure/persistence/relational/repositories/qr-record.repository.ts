@@ -52,6 +52,14 @@ export class QRRecordRelationalRepository implements QRRecordRepository {
     return entities.map((entity) => QRRecordMapper.toDomain(entity));
   }
 
+  async findBySlug(slug: string): Promise<NullableType<QRRecord>> {
+    const entity = await this.repository.findOne({
+      where: { slug },
+    });
+
+    return entity ? QRRecordMapper.toDomain(entity) : null;
+  }
+
   async update(
     id: QRRecord['id'],
     payload: Partial<QRRecord>,

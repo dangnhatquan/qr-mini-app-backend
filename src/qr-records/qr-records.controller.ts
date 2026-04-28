@@ -11,6 +11,7 @@ import {
   Param,
   NotFoundException,
   Delete,
+  Redirect,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,8 +26,6 @@ import { CreateQRRecordDto } from './dto/create-qr-record.dto';
 import { UpdateQRRecordDto } from './dto/update-qr-record.dto';
 import { QRRecord } from './domain/qr-record';
 
-@ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
 @ApiTags('QR Records')
 @Controller({
   path: 'qrs',
@@ -35,6 +34,8 @@ import { QRRecord } from './domain/qr-record';
 export class QRRecordsController {
   constructor(private readonly qrRecordsService: QRRecordsService) {}
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiCreatedResponse({
     type: QRRecord,
   })
@@ -47,6 +48,8 @@ export class QRRecordsController {
     return this.qrRecordsService.create(createQRRecordDto, String(req.user.id));
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: [QRRecord],
   })
@@ -56,6 +59,8 @@ export class QRRecordsController {
     return this.qrRecordsService.findQRRecordByUserId(String(req.user.id));
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({
     type: QRRecord,
   })
@@ -78,6 +83,26 @@ export class QRRecordsController {
     type: QRRecord,
   })
   @ApiParam({
+    name: 'slug',
+    type: String,
+    required: true,
+  })
+  @Get('slug/:slug')
+  @Redirect()
+  async findBySlug(@Param('slug') slug: string) {
+    const url = await this.qrRecordsService.getRedirectUrlBySlug(slug);
+    return {
+      url,
+      statusCode: HttpStatus.FOUND,
+    };
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOkResponse({
+    type: QRRecord,
+  })
+  @ApiParam({
     name: 'id',
     type: String,
     required: true,
@@ -91,6 +116,8 @@ export class QRRecordsController {
     return this.qrRecordsService.update(id, updateQRRecordDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
   @ApiParam({
     name: 'id',
     type: String,

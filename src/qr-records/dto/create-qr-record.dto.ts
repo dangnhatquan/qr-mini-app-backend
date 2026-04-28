@@ -58,7 +58,8 @@ export class CreateQRRecordDto {
 
   @ApiProperty({ type: String, required: false })
   @IsString()
-  previewImageId: string;
+  @IsOptional()
+  previewImageId?: string;
 
   // Allow any other fields to be captured as part of the payload
   [key: string]: any;

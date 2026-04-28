@@ -17,6 +17,8 @@ export abstract class QRRecordRepository {
 
   abstract findByUserId(userId: string): Promise<QRRecord[]>;
 
+  abstract findBySlug(slug: string): Promise<NullableType<QRRecord>>;
+
   abstract update(
     id: QRRecord['id'],
     payload: Partial<QRRecord>,
