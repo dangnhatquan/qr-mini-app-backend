@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { FileRepository } from './infrastructure/persistence/file.repository';
 import { FileType } from './domain/file';
 import { NullableType } from '../utils/types/nullable.type';
+import { FileCategoryEnum } from './file-categories.enum';
 
 @Injectable()
 export class FilesService {
@@ -14,5 +15,9 @@ export class FilesService {
 
   findByIds(ids: FileType['id'][]): Promise<FileType[]> {
     return this.fileRepository.findByIds(ids);
+  }
+
+  findByCategory(category: FileCategoryEnum): Promise<FileType[]> {
+    return this.fileRepository.findByCategory(category);
   }
 }

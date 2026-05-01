@@ -18,32 +18,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:2999',
-        'http://localhost:3000',
-        'https://h5.zadn.vn',
-        'https://h5.zdn.vn',
-        'https://mini.zalo.me',
-        'https://zalo.me',
-        'https://conjuror-overshot-headlamp.ngrok-free.dev'
-      ];
-
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log('Blocked by CORS:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-      return allowedOrigins;
-    },
-
+    origin: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-
     allowedHeaders: [
       'Content-Type',
       'Authorization',
@@ -52,8 +28,7 @@ async function bootstrap() {
       'X-Requested-With',
       'ngrok-skip-browser-warning',
     ],
-
-    credentials: false,
+    credentials: true,
   });
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
@@ -68,7 +43,9 @@ async function bootstrap() {
   );
 
   if (process.env.NODE_ENV === 'development') {
-    const minioEndpoint = configService.get('file.minioEndpoint', { infer: true }); // http://localhost:9000
+    const minioEndpoint = configService.get('file.minioEndpoint', {
+      infer: true,
+    }); // http://localhost:9000
     if (!minioEndpoint) {
       throw new Error('file.minioEndpoint is not configured');
     }
@@ -93,7 +70,6 @@ async function bootstrap() {
         },
       }),
     );
-
   }
 
   app.enableVersioning({

@@ -7,6 +7,7 @@ export class FileMapper {
     domainEntity.id = raw.id;
     domainEntity.path = raw.path;
     domainEntity.status = raw.status;
+    domainEntity.category = raw.category;
     domainEntity.expiresAt = raw.expiresAt;
     domainEntity.createdAt = raw.createdAt;
     domainEntity.updatedAt = raw.updatedAt;
@@ -20,6 +21,9 @@ export class FileMapper {
     persistenceEntity.path = domainEntity.path;
     if (domainEntity.status !== undefined) {
       persistenceEntity.status = domainEntity.status;
+    }
+    if (domainEntity.category !== undefined) {
+      persistenceEntity.category = domainEntity.category;
     }
     if (domainEntity.expiresAt !== undefined) {
       persistenceEntity.expiresAt = domainEntity.expiresAt;

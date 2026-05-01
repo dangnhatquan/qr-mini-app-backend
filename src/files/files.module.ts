@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { RelationalFilePersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
 import { FilesService } from './files.service';
+import { FilesController } from './files.controller';
 import fileConfig from './config/file.config';
 import { FileConfig, FileDriver } from './config/file-config.type';
 import { FilesLocalModule } from './infrastructure/uploader/local/files.module';
@@ -25,6 +26,7 @@ const infrastructureUploaderModule =
     infrastructurePersistenceModule,
     infrastructureUploaderModule,
   ],
+  controllers: [FilesController],
   providers: [FilesService],
   exports: [FilesService, infrastructurePersistenceModule],
 })

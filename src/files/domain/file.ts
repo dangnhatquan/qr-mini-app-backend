@@ -4,11 +4,10 @@ import { Transform } from 'class-transformer';
 import fileConfig from '@/files/config/file.config';
 import { FileConfig, FileDriver } from '@/files/config/file-config.type';
 
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AppConfig } from '@/config/app-config.type';
 import appConfig from '@/config/app.config';
 import { FileStatusEnum } from '@/files/file-statuses.enum';
+import { FileCategoryEnum } from '@/files/file-categories.enum';
 
 export class FileType {
   @ApiProperty({
@@ -52,6 +51,14 @@ export class FileType {
     nullable: true,
   })
   status?: FileStatusEnum | null;
+
+  @ApiProperty({
+    type: String,
+    enum: FileCategoryEnum,
+    example: FileCategoryEnum.QR,
+    nullable: true,
+  })
+  category?: FileCategoryEnum | null;
 
   @ApiProperty({ type: Date, nullable: true })
   expiresAt?: Date | null;

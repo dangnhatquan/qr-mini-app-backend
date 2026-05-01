@@ -7,6 +7,7 @@ import { FileRepository } from '../../file.repository';
 import { FileMapper } from '../mappers/file.mapper';
 import { FileType } from '../../../../domain/file';
 import { NullableType } from '../../../../../utils/types/nullable.type';
+import { FileCategoryEnum } from '../../../../file-categories.enum';
 
 @Injectable()
 export class FileRelationalRepository implements FileRepository {
@@ -38,6 +39,16 @@ export class FileRelationalRepository implements FileRepository {
     const entities = await this.fileRepository.find({
       where: {
         id: In(ids),
+      },
+    });
+
+    return entities.map((entity) => FileMapper.toDomain(entity));
+  }
+
+  async findByCategory(category: FileCategoryEnum): Promise<FileType[]> {
+    const entities = await this.fileRepository.find({
+      where: {
+        category: category,
       },
     });
 

@@ -32,23 +32,14 @@ export class FilesS3PresignedService {
           infer: true,
         }),
       },
-      requestChecksumCalculation: 'WHEN_REQUIRED',  // ← thêm
-      responseChecksumValidation: 'WHEN_REQUIRED',  // ← thêm
+      requestChecksumCalculation: 'WHEN_REQUIRED', // ← thêm
+      responseChecksumValidation: 'WHEN_REQUIRED', // ← thêm
     });
   }
 
   async create(
     file: FileUploadDto,
   ): Promise<{ file: FileType; uploadSignedUrl: string }> {
-    if (!file) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        errors: {
-          file: 'selectFile',
-        },
-      });
-    }
-
     if (!file.fileName.match(/\.(jpg|jpeg|png|gif)$/i)) {
       throw new UnprocessableEntityException({
         status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -86,6 +77,7 @@ export class FilesS3PresignedService {
     const signedUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
     const data = await this.fileRepository.create({
       path: key,
+      category: file.category,
     });
 
     return {

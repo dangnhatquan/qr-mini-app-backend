@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { EntityRelationalHelper } from '@/utils/relational-entity-helper';
 import { FileStatusEnum } from '@/files/file-statuses.enum';
+import { FileCategoryEnum } from '@/files/file-categories.enum';
 
 @Entity({ name: 'file' })
 export class FileEntity extends EntityRelationalHelper {
@@ -19,6 +20,9 @@ export class FileEntity extends EntityRelationalHelper {
 
   @Column({ type: 'enum', enum: FileStatusEnum, nullable: true })
   status: FileStatusEnum | null;
+
+  @Column({ type: 'enum', enum: FileCategoryEnum, nullable: true })
+  category: FileCategoryEnum | null;
 
   @Column({ type: 'timestamp', nullable: true })
   expiresAt: Date | null;
