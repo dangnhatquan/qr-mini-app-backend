@@ -4,8 +4,6 @@ import { Transform } from 'class-transformer';
 import fileConfig from '@/files/config/file.config';
 import { FileConfig, FileDriver } from '@/files/config/file-config.type';
 
-import { AppConfig } from '@/config/app-config.type';
-import appConfig from '@/config/app.config';
 import { FileStatusEnum } from '@/files/file-statuses.enum';
 import { FileCategoryEnum } from '@/files/file-categories.enum';
 
@@ -22,23 +20,17 @@ export class FileType {
     example: 'https://example.com/path/to/file.jpg',
   })
   @Transform(
-    ({ value, obj }) => {
-      if ((fileConfig() as FileConfig).driver === FileDriver.LOCAL) {
-        return (appConfig() as AppConfig).backendDomain + value;
-      } else if (
-        [FileDriver.S3_PRESIGNED, FileDriver.S3].includes(
-          (fileConfig() as FileConfig).driver,
-        )
-      ) {
-        const config = fileConfig() as FileConfig;
-        const baseUrl = config.awsS3PublicUrl
-          ? config.awsS3PublicUrl.replace('/minio-proxy', '') // lấy base ngrok URL
-          : config.awsS3Endpoint;
-
-        // Trả về serve URL thay vì presigned
-        return `${baseUrl}/api/v1/files/serve/${obj.id}`;
+    ({ obj }) => {
+      if (!obj || !obj.id) {
+        return null;
       }
-      return value;
+
+      const config = fileConfig() as FileConfig;
+      if (config.driver === FileDriver.LOCAL) {
+        return obj.path;
+      }
+
+      return `/api/v1/files/serve/${obj.id}`;
     },
     { toPlainOnly: true },
   )

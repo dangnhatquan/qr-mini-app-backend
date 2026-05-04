@@ -58,14 +58,8 @@ async function bootstrap() {
         changeOrigin: true,
         pathRewrite: { '^/minio-proxy': '' },
         on: {
-          proxyReq: (proxyReq, req) => {
+          proxyReq: (proxyReq) => {
             proxyReq.setHeader('Host', minioUrl.host);
-            proxyReq.setHeader('ngrok-skip-browser-warning', 'true');
-
-            // Strip ngrok-skip-browser-warning trước khi forward tới MinIO
-            const url = new URL(req.url ?? '', 'http://localhost');
-            url.searchParams.delete('ngrok-skip-browser-warning');
-            proxyReq.path = url.pathname + url.search;
           },
         },
       }),

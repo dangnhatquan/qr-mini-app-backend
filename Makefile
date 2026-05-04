@@ -21,7 +21,7 @@ up:
 	docker compose up -d postgres adminer maildev minio
 
 tunnel:
-	ngrok http 8000
+	cloudflared tunnel --url http://localhost:8000
 
 build:
 	npm run build

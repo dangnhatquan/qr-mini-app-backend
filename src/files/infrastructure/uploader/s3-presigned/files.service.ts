@@ -74,15 +74,28 @@ export class FilesS3PresignedService {
       Key: key,
       ContentLength: file.fileSize,
     });
-    const signedUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+    let signedUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+
+    // Rewrite to be relative to /minio-proxy
+    const endpoint = this.configService.get('file.awsS3Endpoint', {
+      infer: true,
+    });
+    if (endpoint) {
+      signedUrl = signedUrl.replace(endpoint, '/minio-proxy');
+    }
+
+    const bucket = this.configService.getOrThrow('file.awsDefaultS3Bucket', {
+      infer: true,
+    });
+
     const data = await this.fileRepository.create({
-      path: key,
+      path: `/minio-proxy/${bucket}/${key}`,
       category: file.category,
     });
 
     return {
       file: data,
-      uploadSignedUrl: signedUrl + '&ngrok-skip-browser-warning=true',
+      uploadSignedUrl: signedUrl,
     };
   }
 }

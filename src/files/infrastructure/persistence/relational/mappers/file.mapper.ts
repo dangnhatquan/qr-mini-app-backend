@@ -18,7 +18,11 @@ export class FileMapper {
   static toPersistence(domainEntity: FileType): FileEntity {
     const persistenceEntity = new FileEntity();
     persistenceEntity.id = domainEntity.id;
-    persistenceEntity.path = domainEntity.path;
+    let path = domainEntity.path;
+    if (path && path.includes('/minio-proxy/')) {
+      path = path.substring(path.indexOf('/minio-proxy/'));
+    }
+    persistenceEntity.path = path;
     if (domainEntity.status !== undefined) {
       persistenceEntity.status = domainEntity.status;
     }

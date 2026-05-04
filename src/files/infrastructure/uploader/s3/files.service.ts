@@ -38,8 +38,8 @@ export class FilesS3Service {
           infer: true,
         }),
       },
-      requestChecksumCalculation: 'WHEN_REQUIRED',  // ← thêm
-      responseChecksumValidation: 'WHEN_REQUIRED',  // ← thêm
+      requestChecksumCalculation: 'WHEN_REQUIRED', // ← thêm
+      responseChecksumValidation: 'WHEN_REQUIRED', // ← thêm
     });
   }
 
@@ -55,9 +55,16 @@ export class FilesS3Service {
       });
     }
 
+    const awsDefaultS3Bucket = this.configService.get(
+      'file.awsDefaultS3Bucket',
+      {
+        infer: true,
+      },
+    );
+
     return {
       file: await this.fileRepository.create({
-        path: file.key,
+        path: `/minio-proxy/${awsDefaultS3Bucket}/${file.key}`,
         status: FileStatusEnum.ATTACHED,
       }),
     };
@@ -82,16 +89,22 @@ export class FilesS3Service {
       expiresIn: 3600,
     });
 
-    // Chỉ rewrite ở local (khi có AWS_S3_PUBLIC_URL)
-    const publicUrl = this.configService.get('file.awsS3PublicUrl', { infer: true });
-    const endpoint = this.configService.get('file.awsS3Endpoint', { infer: true });
-
-    if (publicUrl && endpoint) {
+    // Use public URL if configured to return a full URL
+    const endpoint = this.configService.get('file.awsS3Endpoint', {
+      infer: true,
+    });
+    const publicUrl = this.configService.get('file.awsS3PublicUrl', {
+      infer: true,
+    });
+    if (endpoint && publicUrl) {
       uploadSignedUrl = uploadSignedUrl.replace(endpoint, publicUrl);
     }
 
     const data = await this.fileRepository.create({
-      path: key,
+      path: `/minio-proxy/${this.configService.getOrThrow(
+        'file.awsDefaultS3Bucket',
+        { infer: true },
+      )}/${key}`,
       status: FileStatusEnum.PENDING,
     });
 
@@ -109,27 +122,50 @@ export class FilesS3Service {
       throw new NotFoundException('File not found');
     }
 
+    const key = file.path.startsWith('/minio-proxy/')
+      ? file.path.split('/').slice(3).join('/')
+      : file.path;
+
     const command = new GetObjectCommand({
       Bucket: this.configService.getOrThrow('file.awsDefaultS3Bucket', {
         infer: true,
       }),
-      Key: file.path,
+      Key: key,
     });
 
-    const downloadSignedUrl = await getSignedUrl(this.s3, command, {
+    let downloadSignedUrl = await getSignedUrl(this.s3, command, {
       expiresIn: 3600,
     });
 
-    return { downloadSignedUrl: downloadSignedUrl + '&ngrok-skip-browser-warning=true' };
+    // Use public URL if configured to return a full URL
+    const endpoint = this.configService.get('file.awsS3Endpoint', {
+      infer: true,
+    });
+    const publicUrl = this.configService.get('file.awsS3PublicUrl', {
+      infer: true,
+    });
+    if (endpoint && publicUrl) {
+      downloadSignedUrl = downloadSignedUrl.replace(endpoint, publicUrl);
+    }
+
+    return { downloadSignedUrl };
   }
 
   async serveFile(id: string): Promise<{ stream: any; contentType: string }> {
     const file = await this.fileRepository.findById(id);
-    if (!file) throw new NotFoundException('File not found');
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const key = file.path.startsWith('/minio-proxy/')
+      ? file.path.split('/').slice(3).join('/')
+      : file.path;
 
     const command = new GetObjectCommand({
-      Bucket: this.configService.getOrThrow('file.awsDefaultS3Bucket', { infer: true }),
-      Key: file.path,
+      Bucket: this.configService.getOrThrow('file.awsDefaultS3Bucket', {
+        infer: true,
+      }),
+      Key: key,
     });
 
     const s3Response = await this.s3.send(command);
