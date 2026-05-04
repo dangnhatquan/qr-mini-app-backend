@@ -25,6 +25,8 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
       useFactory: (configService: ConfigService<AllConfigType>) => {
         const s3 = new S3Client({
           region: configService.get('file.awsS3Region', { infer: true }),
+          endpoint: configService.get('file.awsS3Endpoint', { infer: true }),
+          forcePathStyle: true,
           credentials: {
             accessKeyId: configService.getOrThrow('file.accessKeyId', {
               infer: true,
@@ -33,6 +35,8 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
               infer: true,
             }),
           },
+          requestChecksumCalculation: 'WHEN_REQUIRED',  // ← thêm
+          responseChecksumValidation: 'WHEN_REQUIRED',  // ← thêm
         });
 
         return {
@@ -49,7 +53,7 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
               );
             }
 
-            callback(null, true);
+            return callback(null, true);
           },
           storage: multerS3({
             s3: s3,
@@ -78,4 +82,4 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
   providers: [FilesS3Service],
   exports: [FilesS3Service],
 })
-export class FilesS3Module {}
+export class FilesS3Module { }

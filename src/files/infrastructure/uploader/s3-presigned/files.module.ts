@@ -33,6 +33,8 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
               infer: true,
             }),
           },
+          requestChecksumCalculation: 'WHEN_REQUIRED',  // ← thêm
+          responseChecksumValidation: 'WHEN_REQUIRED',  // ← thêm
         });
 
         return {
@@ -77,4 +79,4 @@ const infrastructurePersistenceModule = RelationalFilePersistenceModule;
   providers: [ConfigModule, ConfigService, FilesS3PresignedService],
   exports: [FilesS3PresignedService],
 })
-export class FilesS3PresignedModule {}
+export class FilesS3PresignedModule { }

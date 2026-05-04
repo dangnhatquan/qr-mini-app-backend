@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Allow } from 'class-validator';
 import { Transform } from 'class-transformer';
-import fileConfig from '../config/file.config';
-import { FileConfig, FileDriver } from '../config/file-config.type';
+import fileConfig from '@/files/config/file.config';
+import { FileConfig, FileDriver } from '@/files/config/file-config.type';
 
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { AppConfig } from '../../config/app-config.type';
-import appConfig from '../../config/app.config';
+import { AppConfig } from '@/config/app-config.type';
+import appConfig from '@/config/app.config';
+import { FileStatusEnum } from '@/files/file-statuses.enum';
+import { FileCategoryEnum } from '@/files/file-categories.enum';
 
 export class FileType {
   @ApiProperty({
@@ -22,7 +22,7 @@ export class FileType {
     example: 'https://example.com/path/to/file.jpg',
   })
   @Transform(
-    ({ value }) => {
+    ({ value, obj }) => {
       if ((fileConfig() as FileConfig).driver === FileDriver.LOCAL) {
         return (appConfig() as AppConfig).backendDomain + value;
       } else if (
@@ -30,27 +30,45 @@ export class FileType {
           (fileConfig() as FileConfig).driver,
         )
       ) {
-        const s3 = new S3Client({
-          region: (fileConfig() as FileConfig).awsS3Region ?? '',
-          credentials: {
-            accessKeyId: (fileConfig() as FileConfig).accessKeyId ?? '',
-            secretAccessKey: (fileConfig() as FileConfig).secretAccessKey ?? '',
-          },
-        });
+        const config = fileConfig() as FileConfig;
+        const baseUrl = config.awsS3PublicUrl
+          ? config.awsS3PublicUrl.replace('/minio-proxy', '') // lấy base ngrok URL
+          : config.awsS3Endpoint;
 
-        const command = new GetObjectCommand({
-          Bucket: (fileConfig() as FileConfig).awsDefaultS3Bucket ?? '',
-          Key: value,
-        });
-
-        return getSignedUrl(s3, command, { expiresIn: 3600 });
+        // Trả về serve URL thay vì presigned
+        return `${baseUrl}/api/v1/files/serve/${obj.id}`;
       }
-
       return value;
     },
-    {
-      toPlainOnly: true,
-    },
+    { toPlainOnly: true },
   )
   path: string;
+
+  @ApiProperty({
+    type: String,
+    enum: FileStatusEnum,
+    example: FileStatusEnum.PENDING,
+    nullable: true,
+  })
+  status?: FileStatusEnum | null;
+
+  @ApiProperty({
+    type: String,
+    enum: FileCategoryEnum,
+    example: FileCategoryEnum.QR,
+    nullable: true,
+  })
+  category?: FileCategoryEnum | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  expiresAt?: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  createdAt?: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  updatedAt?: Date | null;
+
+  @ApiProperty({ type: Date, nullable: true })
+  deletedAt?: Date | null;
 }

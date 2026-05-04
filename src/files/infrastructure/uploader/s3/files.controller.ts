@@ -1,9 +1,13 @@
 import {
   Controller,
   Post,
+  Get,
+  Param,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -16,6 +20,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { FilesS3Service } from './files.service';
 import { FileResponseDto } from './dto/file-response.dto';
+import { FileType } from '@/files/domain/file';
+import { Response } from 'express';
 
 @ApiTags('Files')
 @Controller({
@@ -23,7 +29,7 @@ import { FileResponseDto } from './dto/file-response.dto';
   version: '1',
 })
 export class FilesS3Controller {
-  constructor(private readonly filesService: FilesS3Service) {}
+  constructor(private readonly filesService: FilesS3Service) { }
 
   @ApiCreatedResponse({
     type: FileResponseDto,
@@ -48,5 +54,39 @@ export class FilesS3Controller {
     @UploadedFile() file: Express.MulterS3.File,
   ): Promise<FileResponseDto> {
     return this.filesService.create(file);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('upload')
+  async getUploadPresignedUrl(
+    @Query('fileName') fileName: string,
+  ): Promise<{ file: FileType; uploadSignedUrl: string }> {
+    return this.filesService.getUploadPresignedUrl(fileName || 'file.bin');
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':id')
+  async getDownloadSignedUrl(
+    @Param('id') id: string,
+  ): Promise<{ downloadSignedUrl: string }> {
+    return this.filesService.getDownloadSignedUrl(id);
+  }
+
+  @Get('serve/:id')
+  async serveFile(
+    @Param('id') id: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    const { stream, contentType } = await this.filesService.serveFile(id);
+
+    res.set({
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=3600',
+      'ngrok-skip-browser-warning': 'true',
+    });
+
+    (stream as any).pipe(res);
   }
 }

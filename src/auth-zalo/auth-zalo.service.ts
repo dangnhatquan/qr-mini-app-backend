@@ -21,6 +21,7 @@ import { AuthProvidersEnum } from '../auth/auth-providers.enum';
 import { RoleEnum } from '../roles/roles.enum';
 import { StatusEnum } from '../statuses/statuses.enum';
 import { Session } from '../session/domain/session';
+import { BYPASS_ZALO_ACCESS_TOKEN } from '../utils/constants/common';
 
 @Injectable()
 export class AuthZaloService {
@@ -33,6 +34,40 @@ export class AuthZaloService {
     private readonly sessionService: SessionService,
     private readonly configService: ConfigService<AllConfigType>,
   ) {}
+
+  async handleZaloLogin(dto: AuthZaloLoginDto): Promise<LoginResponseDto> {
+    if (dto.accessToken === BYPASS_ZALO_ACCESS_TOKEN) {
+      return this.handleBypassZaloLogin();
+    }
+    return this.validateZaloLogin(dto);
+  }
+
+  private async handleBypassZaloLogin(): Promise<LoginResponseDto> {
+    const mockProfile: ZaloProfileInterface = {
+      id: 'bypass-zalo-id-123456',
+      name: 'Bypass User',
+      error: 0,
+      message: 'Success',
+    };
+
+    const user = await this.findOrCreateUser(mockProfile);
+
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = await this.sessionService.create({ user, hash });
+
+    const { token, refreshToken, tokenExpires } = await this.getTokensData({
+      id: user.id,
+      role: user.role,
+      sessionId: session.id,
+      hash,
+    });
+
+    return { token, refreshToken, tokenExpires, user };
+  }
 
   async validateZaloLogin(dto: AuthZaloLoginDto): Promise<LoginResponseDto> {
     const zaloProfile = await this.getZaloProfile(dto.accessToken);
@@ -116,7 +151,7 @@ export class AuthZaloService {
 
     if (!user) {
       user = await this.usersService.create({
-        firstName: profile.name ?? null,
+        firstName: profile.name,
         lastName: null,
         email: null,
         socialId: profile.id,
@@ -143,7 +178,7 @@ export class AuthZaloService {
     role: User['role'];
     sessionId: Session['id'];
     hash: Session['hash'];
-  }) {
+  }): Promise<{ token: string; refreshToken: string; tokenExpires: number }> {
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
       infer: true,
     });

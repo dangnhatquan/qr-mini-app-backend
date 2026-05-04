@@ -55,6 +55,7 @@
     "dotenv": "17.3.1",
     "google-auth-library": "10.6.2",
     "handlebars": "4.7.9",
+    "http-proxy-middleware": "^3.0.5",
     "ms": "2.1.3",
     "multer": "2.1.1",
     "multer-s3": "3.0.1",
@@ -102,6 +103,7 @@
     "hygen": "6.2.11",
     "is-ci": "4.1.0",
     "jest": "30.3.0",
+    "lint-staged": "^16.4.0",
     "prettier": "3.8.1",
     "prompts": "2.4.2",
     "release-it": "19.2.4",
@@ -128,7 +130,10 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/$1"
+    }
   },
   "engines": {
     "node": ">=16.0.0",
@@ -194,5 +199,11 @@
         }
       }
     }
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }
