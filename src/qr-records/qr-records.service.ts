@@ -8,7 +8,8 @@ import { QRRecord } from './domain/qr-record';
 import bcrypt from 'bcryptjs';
 import { Logger } from '@nestjs/common';
 import { FilesService } from '../files/files.service';
-import { EQRType } from './qr-records.enum';
+import { CardsService } from '../cards/cards.service';
+import { EQRType, EQRCategory } from './qr-records.enum';
 import crypto from 'crypto';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class QRRecordsService {
   constructor(
     private readonly qrRecordRepository: QRRecordRepository,
     private readonly filesService: FilesService,
+    private readonly cardsService: CardsService,
     private readonly configService: ConfigService<AllConfigType>,
   ) {}
 
@@ -92,7 +94,7 @@ export class QRRecordsService {
     const devVersion = this.configService.get('zalo.devVersion', {
       infer: true,
     });
-    return `https://zalo.me/s/${appId}/?env=DEVELOPMENT&version=${devVersion}&page=vcards/${record.id}`;
+    return `https://zalo.me/s/${appId}/?env=TESTING&version=${devVersion}&page=vcards/${record.id}`;
   }
 
   async update(
@@ -162,6 +164,13 @@ export class QRRecordsService {
   }
 
   async remove(id: string): Promise<void> {
+    const record = await this.qrRecordRepository.findById(id);
+    if (record?.category === EQRCategory.GREETING) {
+      const cardId = record.payload?.greetingData?.cardId as string | undefined;
+      if (cardId) {
+        await this.cardsService.remove(cardId);
+      }
+    }
     await this.qrRecordRepository.remove(id);
   }
 

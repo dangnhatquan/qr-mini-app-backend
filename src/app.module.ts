@@ -24,6 +24,7 @@ import { AuthZaloModule } from './auth-zalo/auth-zalo.module';
 import zaloConfig from './auth-zalo/config/zalo.config';
 import { QRRecordsModule } from './qr-records/qr-records.module';
 import { BanksModule } from './banks/banks.module';
+import { CardsModule } from './cards/cards.module';
 
 const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
   useClass: TypeOrmConfigService,
@@ -82,6 +83,7 @@ const infrastructureDatabaseModule = TypeOrmModule.forRootAsync({
     HomeModule,
     QRRecordsModule,
     BanksModule,
+    CardsModule,
   ],
 })
 export class AppModule {}

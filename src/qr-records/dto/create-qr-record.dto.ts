@@ -52,7 +52,11 @@ export class CreateQRRecordDto {
   @Allow()
   vcardData?: Record<string, any>;
 
-  @ApiProperty({ type: Object, required: false })
+  @ApiProperty({
+    type: Object,
+    required: false,
+    description: 'Greeting card data. Include `cardId` (uuid) to link a Card.',
+  })
   @Allow()
   greetingData?: Record<string, any>;
 
