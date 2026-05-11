@@ -33,10 +33,8 @@ export class QRRecord {
   })
   slug: string | null;
 
-  @ApiProperty({
-    type: String,
-  })
-  passwordHash: string | null;
+  @ApiProperty()
+  hasPassword: boolean;
 
   @ApiProperty({
     type: () => FileType,

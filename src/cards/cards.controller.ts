@@ -5,7 +5,6 @@ import {
   UseGuards,
   HttpStatus,
   HttpCode,
-  Get,
   Patch,
   Param,
   Delete,
@@ -45,10 +44,13 @@ export class CardsController {
   @UseGuards(AuthGuard('jwt'))
   @ApiOkResponse({ type: Card })
   @ApiParam({ name: 'id', type: String, required: true })
-  @Get(':id')
+  @Post(':id')
   @HttpCode(HttpStatus.OK)
-  findOne(@Param('id') id: string): Promise<Card> {
-    return this.cardsService.findOne(id);
+  findOne(
+    @Param('id') id: string,
+    @Body('password') password?: string,
+  ): Promise<Card> {
+    return this.cardsService.findOne(id, password);
   }
 
   @ApiBearerAuth()

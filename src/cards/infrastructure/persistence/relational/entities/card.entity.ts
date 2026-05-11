@@ -21,6 +21,9 @@ export class CardEntity extends EntityRelationalHelper {
   @Column({ type: 'jsonb', nullable: true })
   editorStage: Record<string, any> | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  passwordHash: string | null;
+
   @ManyToOne(() => FileEntity, {
     eager: true,
     nullable: true,

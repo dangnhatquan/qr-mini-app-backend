@@ -5,7 +5,6 @@ import { QRRecordRepository } from './infrastructure/persistence/qr-record.repos
 import { CreateQRRecordDto } from './dto/create-qr-record.dto';
 import { UpdateQRRecordDto } from './dto/update-qr-record.dto';
 import { QRRecord } from './domain/qr-record';
-import bcrypt from 'bcryptjs';
 import { Logger } from '@nestjs/common';
 import { FilesService } from '../files/files.service';
 import { CardsService } from '../cards/cards.service';
@@ -43,14 +42,21 @@ export class QRRecordsService {
       finalSlug = this.generateSlug();
     }
 
-    let passwordHash: string | null = null;
-    if (password) {
-      const salt = await bcrypt.genSalt();
-      passwordHash = await bcrypt.hash(password, salt);
-    }
-
     // Explicitly include data fields if they exist in rest
     const payload = { ...rest };
+
+    let hasPassword = !!password;
+    if (category === EQRCategory.GREETING && payload.greetingData?.cardId) {
+      const cardPassword = payload.greetingData.password || password;
+      if (cardPassword) {
+        await this.cardsService.update(payload.greetingData.cardId, {
+          password: cardPassword,
+        });
+        hasPassword = true;
+        // Clean up password from payload to avoid storing it in plain text jsonb
+        delete payload.greetingData.password;
+      }
+    }
 
     this.logger.log('Creating QR Record:', { createQRRecordDto });
 
@@ -63,7 +69,7 @@ export class QRRecordsService {
       type: qrType,
       category,
       slug: finalSlug || null,
-      passwordHash,
+      hasPassword,
       editorStage: editorStage || null,
       style: style || null,
       payload: Object.keys(payload).length > 0 ? payload : null,
@@ -77,11 +83,25 @@ export class QRRecordsService {
   }
 
   async findOne(id: string): Promise<QRRecord | null> {
-    return this.qrRecordRepository.findById(id);
+    const record = await this.qrRecordRepository.findById(id);
+    if (
+      record?.category === EQRCategory.GREETING &&
+      record.payload?.greetingData
+    ) {
+      record.payload.greetingData.hasPassword = record.hasPassword;
+    }
+    return record;
   }
 
   async findBySlug(slug: string): Promise<QRRecord | null> {
-    return this.qrRecordRepository.findBySlug(slug);
+    const record = await this.qrRecordRepository.findBySlug(slug);
+    if (
+      record?.category === EQRCategory.GREETING &&
+      record.payload?.greetingData
+    ) {
+      record.payload.greetingData.hasPassword = record.hasPassword;
+    }
+    return record;
   }
 
   async getRedirectUrlBySlug(slug: string): Promise<string> {
@@ -117,13 +137,30 @@ export class QRRecordsService {
       return null;
     }
 
-    let passwordHash: string | undefined;
-    if (password) {
-      const salt = await bcrypt.genSalt();
-      passwordHash = await bcrypt.hash(password, salt);
-    }
-
     const payload = { ...rest };
+    let hasPasswordUpdate: boolean | undefined;
+
+    if (
+      (category === EQRCategory.GREETING ||
+        existingRecord.category === EQRCategory.GREETING) &&
+      (payload.greetingData?.cardId ||
+        existingRecord.payload?.greetingData?.cardId)
+    ) {
+      const cardId =
+        payload.greetingData?.cardId ||
+        existingRecord.payload?.greetingData?.cardId;
+      const cardPassword = payload.greetingData?.password || password;
+
+      if (cardPassword !== undefined) {
+        await this.cardsService.update(cardId, { password: cardPassword });
+        hasPasswordUpdate = !!cardPassword;
+        if (payload.greetingData) {
+          delete payload.greetingData.password;
+        }
+      }
+    } else if (password !== undefined) {
+      hasPasswordUpdate = !!password;
+    }
 
     const updateData: Partial<QRRecord> = {};
     if (qrType !== undefined) {
@@ -135,8 +172,8 @@ export class QRRecordsService {
     if (slug !== undefined) {
       updateData.slug = slug;
     }
-    if (passwordHash !== undefined) {
-      updateData.passwordHash = passwordHash;
+    if (hasPasswordUpdate !== undefined) {
+      updateData.hasPassword = hasPasswordUpdate;
     }
     if (editorStage !== undefined) {
       updateData.editorStage = editorStage;

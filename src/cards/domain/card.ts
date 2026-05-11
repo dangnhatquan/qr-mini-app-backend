@@ -15,6 +15,16 @@ export class Card {
   editorStage: Record<string, any> | null;
 
   @ApiProperty({
+    type: String,
+  })
+  passwordHash: string | null;
+
+  @ApiProperty({
+    type: Boolean,
+  })
+  hasPassword?: boolean;
+
+  @ApiProperty({
     type: () => FileType,
     nullable: true,
   })

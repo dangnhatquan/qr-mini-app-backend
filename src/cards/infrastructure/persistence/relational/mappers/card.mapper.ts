@@ -12,6 +12,8 @@ export class CardMapper {
     } else {
       domainEntity.previewImage = null;
     }
+    domainEntity.passwordHash = raw.passwordHash;
+    domainEntity.hasPassword = !!raw.passwordHash;
     domainEntity.createdAt = raw.createdAt;
     domainEntity.updatedAt = raw.updatedAt;
     domainEntity.deletedAt = raw.deletedAt;
@@ -32,6 +34,7 @@ export class CardMapper {
     } else {
       persistenceEntity.previewImage = null;
     }
+    persistenceEntity.passwordHash = domainEntity.passwordHash;
     persistenceEntity.createdAt = domainEntity.createdAt;
     persistenceEntity.updatedAt = domainEntity.updatedAt;
     persistenceEntity.deletedAt = domainEntity.deletedAt;

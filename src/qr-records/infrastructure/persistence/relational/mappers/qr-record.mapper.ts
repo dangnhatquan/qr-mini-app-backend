@@ -10,7 +10,7 @@ export class QRRecordMapper {
     domainEntity.type = raw.type;
     domainEntity.category = raw.category;
     domainEntity.slug = raw.slug;
-    domainEntity.passwordHash = raw.passwordHash;
+    domainEntity.hasPassword = raw.hasPassword;
     if (raw.previewImage) {
       domainEntity.previewImage = FileMapper.toDomain(raw.previewImage);
     }
@@ -34,7 +34,7 @@ export class QRRecordMapper {
     persistenceEntity.type = domainEntity.type;
     persistenceEntity.category = domainEntity.category;
     persistenceEntity.slug = domainEntity.slug;
-    persistenceEntity.passwordHash = domainEntity.passwordHash;
+    persistenceEntity.hasPassword = domainEntity.hasPassword;
     if (domainEntity.previewImage) {
       persistenceEntity.previewImage = FileMapper.toPersistence(
         domainEntity.previewImage,

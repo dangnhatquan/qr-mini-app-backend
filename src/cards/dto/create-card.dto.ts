@@ -11,4 +11,9 @@ export class CreateCardDto {
   @IsString()
   @IsOptional()
   previewImageId?: string | null;
+
+  @ApiProperty({ type: String, required: false, nullable: true })
+  @IsString()
+  @IsOptional()
+  password?: string | null;
 }

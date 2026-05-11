@@ -34,8 +34,8 @@ export class QRRecordEntity extends EntityRelationalHelper {
   @Column({ type: 'varchar', nullable: true })
   slug: string | null;
 
-  @Column({ type: 'varchar', nullable: true })
-  passwordHash: string | null;
+  @Column({ type: 'boolean', default: false })
+  hasPassword: boolean;
 
   @ManyToOne(() => FileEntity, {
     eager: true,
