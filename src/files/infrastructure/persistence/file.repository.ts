@@ -10,4 +10,5 @@ export abstract class FileRepository {
   abstract findByIds(ids: FileType['id'][]): Promise<FileType[]>;
 
   abstract findByCategory(category: FileCategoryEnum): Promise<FileType[]>;
+  abstract remove(id: FileType['id']): Promise<void>;
 }

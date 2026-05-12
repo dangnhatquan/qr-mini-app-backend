@@ -3,11 +3,16 @@ import {
   Injectable,
   PayloadTooLargeException,
   UnprocessableEntityException,
+  NotFoundException,
 } from '@nestjs/common';
 import { FileRepository } from '../../persistence/file.repository';
 
 import { FileUploadDto } from './dto/file.dto';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  PutObjectCommand,
+  S3Client,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
 import { ConfigService } from '@nestjs/config';
@@ -97,5 +102,31 @@ export class FilesS3PresignedService {
       file: data,
       uploadSignedUrl: signedUrl,
     };
+  }
+
+  async remove(id: string): Promise<void> {
+    const file = await this.fileRepository.findById(id);
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const key = file.path.startsWith('/minio-proxy/')
+      ? file.path.split('/').slice(3).join('/')
+      : file.path;
+
+    const command = new DeleteObjectCommand({
+      Bucket: this.configService.getOrThrow('file.awsDefaultS3Bucket', {
+        infer: true,
+      }),
+      Key: key,
+    });
+
+    try {
+      await this.s3.send(command);
+    } catch (error) {
+      console.error('Error deleting file from S3:', error);
+    }
+
+    await this.fileRepository.remove(id);
   }
 }

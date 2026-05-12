@@ -12,6 +12,7 @@ import {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
+  DeleteObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { randomStringGenerator } from '@nestjs/common/utils/random-string-generator.util';
@@ -174,5 +175,34 @@ export class FilesS3Service {
       stream: s3Response.Body,
       contentType: s3Response.ContentType ?? 'application/octet-stream',
     };
+  }
+
+  async remove(id: string): Promise<void> {
+    const file = await this.fileRepository.findById(id);
+    if (!file) {
+      throw new NotFoundException('File not found');
+    }
+
+    const key = file.path.startsWith('/minio-proxy/')
+      ? file.path.split('/').slice(3).join('/')
+      : file.path;
+
+    const command = new DeleteObjectCommand({
+      Bucket: this.configService.getOrThrow('file.awsDefaultS3Bucket', {
+        infer: true,
+      }),
+      Key: key,
+    });
+
+    try {
+      await this.s3.send(command);
+    } catch (error) {
+      console.error('Error deleting file from S3:', error);
+      // Optional: continue even if S3 delete fails to keep DB in sync?
+      // Or throw error? Usually we want DB to stay if S3 delete fails if it's critical.
+      // But for "cleanup", maybe we just log and continue.
+    }
+
+    await this.fileRepository.remove(id);
   }
 }

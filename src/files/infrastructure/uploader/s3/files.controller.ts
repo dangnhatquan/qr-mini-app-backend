@@ -8,6 +8,9 @@ import {
   UseGuards,
   UseInterceptors,
   Res,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -29,7 +32,7 @@ import { Response } from 'express';
   version: '1',
 })
 export class FilesS3Controller {
-  constructor(private readonly filesService: FilesS3Service) { }
+  constructor(private readonly filesService: FilesS3Service) {}
 
   @ApiCreatedResponse({
     type: FileResponseDto,
@@ -88,5 +91,13 @@ export class FilesS3Controller {
     });
 
     (stream as any).pipe(res);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
+    return this.filesService.remove(id);
   }
 }

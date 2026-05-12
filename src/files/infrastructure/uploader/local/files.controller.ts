@@ -7,6 +7,9 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  Delete,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -58,5 +61,13 @@ export class FilesLocalController {
   @ApiExcludeEndpoint()
   download(@Param('path') path, @Response() response) {
     return response.sendFile(path, { root: './files' });
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(@Param('id') id: string): Promise<void> {
+    return this.filesService.remove(id);
   }
 }
